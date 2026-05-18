@@ -1,0 +1,818 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+  <title>DIU Batch 68 | Section Management</title>
+  <!-- Google Fonts + Font Awesome -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Inter', sans-serif;
+    }
+
+    body {
+      background: linear-gradient(145deg, #f4f7fc 0%, #eef2f5 100%);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* ========== HAMBURGER + SIDEBAR ========== */
+    .navbar {
+      background: rgba(255, 255, 255, 0.92);
+      backdrop-filter: blur(12px);
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.05);
+      padding: 1rem 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 200;
+      border-bottom: 1px solid rgba(66, 153, 225, 0.2);
+    }
+
+    .logo-area {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .logo-icon {
+      background: #1e3c72;
+      width: 42px;
+      height: 42px;
+      border-radius: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 1.5rem;
+      box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+    }
+
+    .logo-text h2 {
+      font-size: 1.35rem;
+      font-weight: 700;
+      color: #0a2b44;
+      letter-spacing: -0.3px;
+    }
+
+    .logo-text p {
+      font-size: 0.7rem;
+      font-weight: 500;
+      color: #2c7da0;
+      margin-top: 2px;
+    }
+
+    /* hamburger button */
+    .hamburger {
+      background: white;
+      border: none;
+      width: 48px;
+      height: 48px;
+      border-radius: 30px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      cursor: pointer;
+      gap: 6px;
+      transition: 0.2s;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+      z-index: 210;
+    }
+
+    .hamburger span {
+      display: block;
+      width: 24px;
+      height: 2.5px;
+      background-color: #1e3c72;
+      border-radius: 4px;
+      transition: 0.25s ease;
+    }
+
+    .hamburger.active span:nth-child(1) {
+      transform: rotate(45deg) translate(6px, 6px);
+    }
+    .hamburger.active span:nth-child(2) {
+      opacity: 0;
+    }
+    .hamburger.active span:nth-child(3) {
+      transform: rotate(-45deg) translate(6px, -6px);
+    }
+
+    /* sidebar overlay */
+    .sidebar {
+      position: fixed;
+      top: 0;
+      left: -280px;
+      width: 280px;
+      height: 100%;
+      background: rgba(255, 255, 255, 0.98);
+      backdrop-filter: blur(16px);
+      box-shadow: 4px 0 28px rgba(0, 0, 0, 0.1);
+      z-index: 300;
+      transition: left 0.3s cubic-bezier(0.2, 0.9, 0.4, 1.1);
+      padding: 2rem 1.2rem;
+      display: flex;
+      flex-direction: column;
+      gap: 2rem;
+      border-right: 1px solid rgba(0,0,0,0.05);
+    }
+
+    .sidebar.open {
+      left: 0;
+    }
+
+    .sidebar-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      border-bottom: 1px solid #e2edf2;
+      padding-bottom: 1.2rem;
+    }
+
+    .sidebar-header i {
+      font-size: 2rem;
+      color: #1e3c72;
+    }
+
+    .sidebar-header h3 {
+      font-weight: 600;
+      color: #0f2b40;
+    }
+
+    .nav-links {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 12px 16px;
+      border-radius: 20px;
+      font-weight: 500;
+      color: #2c3e50;
+      transition: 0.2s;
+      cursor: pointer;
+    }
+
+    .nav-item i {
+      width: 24px;
+      font-size: 1.2rem;
+    }
+
+    .nav-item.active {
+      background: #eef2ff;
+      color: #1e3c72;
+      font-weight: 600;
+      box-shadow: inset 0 0 0 1px rgba(30,60,114,0.2);
+    }
+
+    .nav-item:hover:not(.active) {
+      background: #e9f0f5;
+    }
+
+    .overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.3);
+      backdrop-filter: blur(2px);
+      z-index: 250;
+      visibility: hidden;
+      opacity: 0;
+      transition: 0.2s;
+    }
+
+    .overlay.active {
+      visibility: visible;
+      opacity: 1;
+    }
+
+    /* main container */
+    .main-container {
+      max-width: 1400px;
+      margin: 2rem auto;
+      padding: 0 1.8rem;
+    }
+
+    /* Hero + heading */
+    .hero-section {
+      margin-bottom: 2rem;
+    }
+
+    .hero-section h1 {
+      font-size: 2.3rem;
+      font-weight: 700;
+      background: linear-gradient(135deg, #1e3c72, #2a5298);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+
+    .hero-section p {
+      color: #4a627a;
+      margin-top: 0.5rem;
+      font-weight: 500;
+    }
+
+    .badge-batch {
+      background: #ffe8e0;
+      display: inline-block;
+      padding: 0.3rem 1rem;
+      border-radius: 40px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: #c4450c;
+      margin-bottom: 1rem;
+    }
+
+    /* group cards / section cards */
+    .sections-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: 1.8rem;
+      margin-top: 1rem;
+    }
+
+    .section-card {
+      background: white;
+      border-radius: 28px;
+      padding: 1.4rem 1.5rem;
+      transition: all 0.25s ease;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.03);
+      border: 1px solid rgba(0,0,0,0.05);
+    }
+
+    .section-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 20px 30px -12px rgba(0, 0, 0, 0.12);
+      border-color: rgba(30, 60, 114, 0.2);
+    }
+
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 2px dashed #e9edf2;
+      padding-bottom: 0.8rem;
+      margin-bottom: 1rem;
+    }
+
+    .section-name {
+      font-weight: 800;
+      font-size: 1.5rem;
+      background: linear-gradient(145deg, #1f3b62, #1e4a76);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+
+    .section-code {
+      background: #eef2ff;
+      padding: 0.2rem 0.8rem;
+      border-radius: 30px;
+      font-size: 0.7rem;
+      font-weight: 700;
+      color: #2c5282;
+    }
+
+    .group-list {
+      margin: 1rem 0;
+      max-height: 200px;
+      overflow-y: auto;
+      padding-right: 4px;
+    }
+
+    .group-item {
+      background: #f8fafc;
+      border-radius: 18px;
+      padding: 0.6rem 0.9rem;
+      margin-bottom: 0.7rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      transition: 0.1s;
+      border-left: 4px solid #3b82f6;
+    }
+
+    .group-name {
+      font-weight: 600;
+      font-size: 0.9rem;
+      color: #1e293b;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .group-name i {
+      color: #3b82f6;
+      font-size: 0.8rem;
+    }
+
+    .member-count {
+      background: #e0e7ff;
+      border-radius: 20px;
+      padding: 0.2rem 0.7rem;
+      font-size: 0.7rem;
+      font-weight: 700;
+      color: #1e3c72;
+    }
+
+    .btn-add-group {
+      background: transparent;
+      border: 1px dashed #9bb6cf;
+      border-radius: 40px;
+      padding: 0.5rem;
+      width: 100%;
+      font-weight: 500;
+      font-size: 0.8rem;
+      color: #2c5a8c;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      margin-top: 0.7rem;
+      transition: 0.2s;
+      cursor: pointer;
+    }
+
+    .btn-add-group:hover {
+      background: #eef2ff;
+      border: 1px solid #3b82f6;
+    }
+
+    .group-actions {
+      display: flex;
+      gap: 10px;
+    }
+
+    .group-actions button {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 0.8rem;
+      color: #7f8c8d;
+      transition: 0.2s;
+    }
+
+    .group-actions button.edit-group {
+      color: #2c7da0;
+    }
+    .group-actions button.delete-group {
+      color: #e26d5c;
+    }
+    .group-actions button:hover {
+      transform: scale(1.1);
+    }
+
+    /* modal */
+    .modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      backdrop-filter: blur(4px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 400;
+      visibility: hidden;
+      opacity: 0;
+      transition: 0.2s;
+    }
+
+    .modal.active {
+      visibility: visible;
+      opacity: 1;
+    }
+
+    .modal-content {
+      background: white;
+      width: 90%;
+      max-width: 420px;
+      border-radius: 32px;
+      padding: 1.8rem;
+      box-shadow: 0 25px 40px rgba(0, 0, 0, 0.2);
+    }
+
+    .modal-content h3 {
+      font-size: 1.5rem;
+      margin-bottom: 1rem;
+    }
+
+    .modal-content input {
+      width: 100%;
+      padding: 12px 16px;
+      border: 1px solid #cbd5e0;
+      border-radius: 60px;
+      margin: 0.8rem 0;
+      font-size: 1rem;
+    }
+
+    .modal-buttons {
+      display: flex;
+      justify-content: flex-end;
+      gap: 12px;
+      margin-top: 1rem;
+    }
+
+    .modal-buttons button {
+      padding: 8px 20px;
+      border-radius: 40px;
+      border: none;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .confirm-btn {
+      background: #1e3c72;
+      color: white;
+    }
+
+    .cancel-btn {
+      background: #e2e8f0;
+    }
+
+    /* footer */
+    .footer-info {
+      text-align: center;
+      padding: 2rem;
+      color: #5e7a93;
+      font-size: 0.8rem;
+      margin-top: 2rem;
+    }
+
+    @media (max-width: 680px) {
+      .main-container {
+        padding: 0 1rem;
+      }
+      .hero-section h1 {
+        font-size: 1.7rem;
+      }
+      .navbar {
+        padding: 0.8rem 1rem;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<!-- overlay for sidebar -->
+<div class="overlay" id="overlay"></div>
+
+<!-- sidebar navigation -->
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-header">
+    <i class="fas fa-users-viewfinder"></i>
+    <div>
+      <h3>DIU Batch 68</h3>
+      <p style="font-size: 0.7rem;">Section Manager</p>
+    </div>
+  </div>
+  <div class="nav-links">
+    <div class="nav-item active" data-nav="dashboard">
+      <i class="fas fa-chalkboard-user"></i> <span>Dashboard</span>
+    </div>
+    <div class="nav-item" data-nav="groups">
+      <i class="fas fa-layer-group"></i> <span>All Groups</span>
+    </div>
+    <div class="nav-item" data-nav="sections">
+      <i class="fas fa-table-list"></i> <span>Sections</span>
+    </div>
+    <div class="nav-item" data-nav="analytics">
+      <i class="fas fa-chart-line"></i> <span>Insights</span>
+    </div>
+  </div>
+  <div style="margin-top: auto; font-size: 0.75rem; color: #8ba3bc; text-align: center; border-top: 1px solid #eef2f5; padding-top: 1rem;">
+    <i class="fas fa-graduation-cap"></i> Daffodil International University
+  </div>
+</aside>
+
+<!-- main navbar -->
+<div class="navbar">
+  <div class="logo-area">
+    <div class="logo-icon"><i class="fas fa-code-branch"></i></div>
+    <div class="logo-text">
+      <h2>Batch 68 · Section Hub</h2>
+      <p>DIU CSE | Group Management</p>
+    </div>
+  </div>
+  <button class="hamburger" id="hamburgerBtn">
+    <span></span>
+    <span></span>
+    <span></span>
+  </button>
+</div>
+
+<!-- main content -->
+<div class="main-container" id="mainContent">
+  <div class="hero-section">
+    <div class="badge-batch"><i class="fas fa-calendar-alt"></i> 2024 - 2028 | Active Students</div>
+    <h1>📋 Section & Group Management</h1>
+    <p>Effortlessly manage your section groups, add new teams, and track members — DIU Batch 68 community.</p>
+  </div>
+
+  <div id="sectionsContainer" class="sections-grid">
+    <!-- dynamic sections will be injected here -->
+  </div>
+  <div class="footer-info">
+    <i class="fas fa-people-arrows"></i> Smart group coordination • Real-time edit • DIU Spirit
+  </div>
+</div>
+
+<!-- modal for group add/edit -->
+<div id="groupModal" class="modal">
+  <div class="modal-content">
+    <h3 id="modalTitle">Add New Group</h3>
+    <input type="text" id="groupNameInput" placeholder="e.g., Code Mavericks, Alpha Squad" autocomplete="off">
+    <input type="number" id="memberCountInput" placeholder="Member count (number)" value="4">
+    <div class="modal-buttons">
+      <button class="cancel-btn" id="closeModalBtn">Cancel</button>
+      <button class="confirm-btn" id="confirmGroupBtn">Save Group</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  // ---------- DATA MODEL ----------
+  // sections with groups array: each group has name, members, id
+  let sectionsData = [
+    { id: "secA", name: "Section A", code: "CSE-68A", groups: [
+      { id: "g1", name: "Byte Brigade", members: 6 },
+      { id: "g2", name: "Neural Ninjas", members: 5 }
+    ]},
+    { id: "secB", name: "Section B", code: "CSE-68B", groups: [
+      { id: "g3", name: "Quantum Crew", members: 7 },
+      { id: "g4", name: "Dev Dynamos", members: 4 }
+    ]},
+    { id: "secC", name: "Section C", code: "CSE-68C", groups: [
+      { id: "g5", name: "Innovators Hub", members: 5 }
+    ]}
+  ];
+
+  // helper: generate unique group id
+  function generateGroupId() {
+    return 'group_' + Date.now() + '_' + Math.random().toString(36).substr(2, 6);
+  }
+
+  // render all sections and groups
+  function renderSections() {
+    const container = document.getElementById('sectionsContainer');
+    if (!container) return;
+    container.innerHTML = '';
+    sectionsData.forEach(section => {
+      const card = document.createElement('div');
+      card.className = 'section-card';
+      card.dataset.sectionId = section.id;
+      // groups HTML
+      let groupsHtml = '';
+      section.groups.forEach(group => {
+        groupsHtml += `
+          <div class="group-item" data-group-id="${group.id}" data-section-id="${section.id}">
+            <div class="group-name">
+              <i class="fas fa-users"></i> ${escapeHtml(group.name)}
+            </div>
+            <div style="display: flex; align-items: center; gap: 12px;">
+              <span class="member-count"><i class="fas fa-user-friends"></i> ${group.members} members</span>
+              <div class="group-actions">
+                <button class="edit-group" data-section="${section.id}" data-group='${JSON.stringify(group)}'><i class="fas fa-edit"></i></button>
+                <button class="delete-group" data-section="${section.id}" data-group-id="${group.id}"><i class="fas fa-trash-alt"></i></button>
+              </div>
+            </div>
+          </div>
+        `;
+      });
+      if (section.groups.length === 0) {
+        groupsHtml = `<div style="padding: 1rem; text-align: center; color: #9aaebf;"><i class="fas fa-info-circle"></i> No groups yet. Add one!</div>`;
+      }
+      card.innerHTML = `
+        <div class="card-header">
+          <span class="section-name">${escapeHtml(section.name)}</span>
+          <span class="section-code">${escapeHtml(section.code)}</span>
+        </div>
+        <div class="group-list" id="groupList-${section.id}">
+          ${groupsHtml}
+        </div>
+        <button class="btn-add-group" data-section-id="${section.id}">
+          <i class="fas fa-plus-circle"></i> Add Group
+        </button>
+      `;
+      container.appendChild(card);
+    });
+
+    // attach event listeners dynamically for add group
+    document.querySelectorAll('.btn-add-group').forEach(btn => {
+      btn.removeEventListener('click', handleAddGroupClick);
+      btn.addEventListener('click', handleAddGroupClick);
+    });
+    // edit group & delete group event delegation (since groups can be re-rendered)
+    container.querySelectorAll('.edit-group').forEach(btn => {
+      btn.removeEventListener('click', handleEditGroup);
+      btn.addEventListener('click', handleEditGroup);
+    });
+    container.querySelectorAll('.delete-group').forEach(btn => {
+      btn.removeEventListener('click', handleDeleteGroup);
+      btn.addEventListener('click', handleDeleteGroup);
+    });
+  }
+
+  function escapeHtml(str) {
+    if (!str) return '';
+    return str.replace(/[&<>]/g, function(m) {
+      if (m === '&') return '&amp;';
+      if (m === '<') return '&lt;';
+      if (m === '>') return '&gt;';
+      return m;
+    }).replace(/[\uD800-\uDBFF][\uDC00-\uDFFF]/g, function(c) {
+      return c;
+    });
+  }
+
+  // global modal state
+  let currentModalSectionId = null;
+  let currentEditGroup = null; // if editing, store group object reference and its section
+
+  function openGroupModal(sectionId, groupForEdit = null) {
+    currentModalSectionId = sectionId;
+    currentEditGroup = groupForEdit;
+    const modal = document.getElementById('groupModal');
+    const modalTitle = document.getElementById('modalTitle');
+    const groupNameInput = document.getElementById('groupNameInput');
+    const memberCountInput = document.getElementById('memberCountInput');
+    if (groupForEdit) {
+      modalTitle.innerText = 'Edit Group';
+      groupNameInput.value = groupForEdit.name;
+      memberCountInput.value = groupForEdit.members;
+    } else {
+      modalTitle.innerText = 'Add New Group';
+      groupNameInput.value = '';
+      memberCountInput.value = 4;
+    }
+    modal.classList.add('active');
+  }
+
+  function closeModal() {
+    document.getElementById('groupModal').classList.remove('active');
+    currentModalSectionId = null;
+    currentEditGroup = null;
+  }
+
+  function saveGroupFromModal() {
+    const groupName = document.getElementById('groupNameInput').value.trim();
+    let membersCount = parseInt(document.getElementById('memberCountInput').value, 10);
+    if (isNaN(membersCount) || membersCount < 1) membersCount = 1;
+    if (!groupName) {
+      alert("Please enter a group name!");
+      return;
+    }
+    const targetSection = sectionsData.find(sec => sec.id === currentModalSectionId);
+    if (!targetSection) {
+      closeModal();
+      return;
+    }
+    if (currentEditGroup) {
+      // edit existing group
+      const groupIndex = targetSection.groups.findIndex(g => g.id === currentEditGroup.id);
+      if (groupIndex !== -1) {
+        targetSection.groups[groupIndex].name = groupName;
+        targetSection.groups[groupIndex].members = membersCount;
+      }
+    } else {
+      // add new group
+      const newGroup = {
+        id: generateGroupId(),
+        name: groupName,
+        members: membersCount
+      };
+      targetSection.groups.push(newGroup);
+    }
+    renderSections(); // re-render UI
+    closeModal();
+  }
+
+  function handleAddGroupClick(e) {
+    const btn = e.currentTarget;
+    const sectionId = btn.dataset.sectionId;
+    if (sectionId) {
+      openGroupModal(sectionId, null);
+    }
+  }
+
+  function handleEditGroup(e) {
+    e.stopPropagation();
+    const btn = e.currentTarget;
+    const groupDataAttr = btn.dataset.group;
+    const sectionId = btn.dataset.section;
+    if (groupDataAttr && sectionId) {
+      try {
+        const groupObj = JSON.parse(groupDataAttr);
+        openGroupModal(sectionId, groupObj);
+      } catch (err) { console.warn(err); }
+    }
+  }
+
+  function handleDeleteGroup(e) {
+    e.stopPropagation();
+    const btn = e.currentTarget;
+    const sectionId = btn.dataset.section;
+    const groupId = btn.dataset.groupId;
+    if (sectionId && groupId) {
+      const section = sectionsData.find(sec => sec.id === sectionId);
+      if (section) {
+        const confirmDel = confirm("Delete this group? This action cannot be undone.");
+        if (confirmDel) {
+          section.groups = section.groups.filter(g => g.id !== groupId);
+          renderSections();
+        }
+      }
+    }
+  }
+
+  // Hamburger & Sidebar logic
+  const hamburgerBtn = document.getElementById('hamburgerBtn');
+  const sidebar = document.getElementById('sidebar');
+  const overlayEl = document.getElementById('overlay');
+
+  function toggleSidebar(open) {
+    if (open) {
+      sidebar.classList.add('open');
+      overlayEl.classList.add('active');
+      hamburgerBtn.classList.add('active');
+    } else {
+      sidebar.classList.remove('open');
+      overlayEl.classList.remove('active');
+      hamburgerBtn.classList.remove('active');
+    }
+  }
+
+  hamburgerBtn.addEventListener('click', () => {
+    const isOpen = sidebar.classList.contains('open');
+    toggleSidebar(!isOpen);
+  });
+  overlayEl.addEventListener('click', () => toggleSidebar(false));
+
+  // Navigation dummy (UI friendly message)
+  const navItems = document.querySelectorAll('.nav-item');
+  navItems.forEach(item => {
+    item.addEventListener('click', (e) => {
+      const navVal = item.dataset.nav;
+      navItems.forEach(nav => nav.classList.remove('active'));
+      item.classList.add('active');
+      toggleSidebar(false);
+      if (navVal === 'dashboard') {
+        // already on dashboard
+        document.querySelector('.hero-section h1').innerHTML = '📋 Section & Group Management';
+        document.querySelector('.hero-section p').innerHTML = 'Effortlessly manage your section groups, add new teams, and track members — DIU Batch 68 community.';
+        renderSections();
+      } else if (navVal === 'groups') {
+        // show all groups from all sections aggregated view
+        let allGroupsHtml = '';
+        sectionsData.forEach(sec => {
+          sec.groups.forEach(g => {
+            allGroupsHtml += `<div style="background:#fff; border-radius: 20px; padding: 12px; margin-bottom: 10px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);"><i class="fas fa-users"></i> <strong>${escapeHtml(g.name)}</strong> (${sec.name}) — ${g.members} members</div>`;
+          });
+        });
+        if (allGroupsHtml === '') allGroupsHtml = '<p>No groups created yet. Start adding!</p>';
+        document.getElementById('sectionsContainer').innerHTML = `<div style="grid-column:1/-1;"><div class="section-card" style="background:#fef9e6;"><h3><i class="fas fa-layer-group"></i> All Groups Overview</h3><div style="margin-top: 20px;">${allGroupsHtml}</div></div></div>`;
+        document.querySelector('.hero-section h1').innerHTML = '👥 All Groups · Batch 68';
+        document.querySelector('.hero-section p').innerHTML = 'Complete list of student groups across sections.';
+      } else if (navVal === 'sections') {
+        document.querySelector('.hero-section h1').innerHTML = '📚 Sections Management';
+        document.querySelector('.hero-section p').innerHTML = 'Overview of all sections and their internal groups.';
+        renderSections();
+      } else if (navVal === 'analytics') {
+        let totalGroups = 0, totalMembers = 0;
+        sectionsData.forEach(sec => { totalGroups += sec.groups.length; sec.groups.forEach(g => totalMembers += g.members); });
+        document.getElementById('sectionsContainer').innerHTML = `<div style="grid-column:1/-1;"><div class="section-card" style="background:linear-gradient(135deg,#eef9ff,white);"><h3><i class="fas fa-chart-simple"></i> Batch 68 Insights</h3><p><strong>📌 Total Sections:</strong> ${sectionsData.length}</p><p><strong>👥 Total Groups:</strong> ${totalGroups}</p><p><strong>🎓 Total Members (approx):</strong> ${totalMembers}</p><hr><p><i class="fas fa-rocket"></i> DIU CSE Batch 68 — Collaboration at its best</p></div></div>`;
+        document.querySelector('.hero-section h1').innerHTML = '📊 Analytics & Statistics';
+        document.querySelector('.hero-section p').innerHTML = 'Track group distribution and community engagement.';
+      }
+    });
+  });
+
+  // initial load
+  renderSections();
+
+  // modal buttons
+  document.getElementById('confirmGroupBtn').addEventListener('click', saveGroupFromModal);
+  document.getElementById('closeModalBtn').addEventListener('click', closeModal);
+  document.getElementById('groupModal').addEventListener('click', (e) => {
+    if (e.target === document.getElementById('groupModal')) closeModal();
+  });
+</script>
+</body>
+</html>
